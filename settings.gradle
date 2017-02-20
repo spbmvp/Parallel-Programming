@@ -1,0 +1,5 @@
+rootProject.name = 'Parallel-Programming'
+include 'InitrLab'
+include 'Lab01'
+include 'Lab02'
+
