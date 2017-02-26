@@ -1,4 +1,4 @@
-package ru.spbstu.telematics.popov.initrlab;
+package ru.spbstu.telematics.popov.lab01;
 
 /**
  * Вводная лабораторная работа.
@@ -9,9 +9,21 @@ package ru.spbstu.telematics.popov.initrlab;
 public class Introduction {
     public static void main(String[] args) {
         System.out.println("Hello World!");
+        /*
+        *Пример использования commons-io на примере работы с файлами
+         */
         FilesIO fileIO = new FilesIO();
         fileIO.touch("Test");
         fileIO.rm("Test");
+
+        /*
+        *Пример использования commons-io на примере работы с файлами
+         */
+        double[][] m1 = {{1,1,1},{1,1,1},{1,1,1}};
+        double[][] m2 = {{2,2,2},{2,2,2},{2,2,2}};
+        Math matrix = new Math();
+        matrix.MatrixOutput(matrix.MatrixAdd(m1,m2));
+        matrix.MatrixOutput(matrix.MatrixMultiply(m1,m2));
     }
 }
 
