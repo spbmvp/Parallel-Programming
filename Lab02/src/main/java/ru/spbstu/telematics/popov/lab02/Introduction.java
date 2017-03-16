@@ -5,5 +5,9 @@ public class Introduction {
         for(;;) {
 	    ;
         }
+	while(true){
+		;
+	}
+	System.exit(0);
     }
 }
