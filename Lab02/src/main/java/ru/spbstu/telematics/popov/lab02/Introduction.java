@@ -6,5 +6,10 @@ public class Introduction {
   	//}
     public static void main(String[] args) {
 	//logger.log("My Message");
+	    
+	 ////lknm,kjhbjjknml;,kjnbjnmk,
+	while(true){
+		;
+	}
     }
 }
