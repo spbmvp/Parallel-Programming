@@ -15,7 +15,7 @@ public class Introduction {
 	public void hJHJh21() {
 		//854wef4874swdf
 		while(true) {
-			;//
+			;
 		}
 	}
 }
