@@ -1,6 +1,11 @@
 package ru.spbstu.telematics.popov.lab02;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Подобие HashMap, наследуется от intarface Map
@@ -10,9 +15,9 @@ import java.util.*;
  * @see Map
  */
 public class MyMap<K, V> implements Map<K, V> {
-    List<K> keys;
-    List<V> values;
-    List<Integer> links;
+    private List<K> keys;
+    private List<V> values;
+    private List<Node> links;
 
     public MyMap() {
         this.keys = new LinkedList<>();
@@ -22,7 +27,7 @@ public class MyMap<K, V> implements Map<K, V> {
 
     @Override
     public int size() {
-        return this.keys.size();
+        return this.links.size();
     }
 
     @Override
@@ -47,9 +52,9 @@ public class MyMap<K, V> implements Map<K, V> {
 
     private int getValueIndex(Object key) {
         int i = keys.indexOf(key);
-        for (int l = 0; l < links.size(); l += 2) {
-            if (links.get(l) == i) {
-                return links.get(l + 1);
+        for (Node link : links) {
+            if (link.getIndexKey() == i) {
+                return link.getIndexValue();
             }
         }
         return -1;
@@ -57,8 +62,8 @@ public class MyMap<K, V> implements Map<K, V> {
 
     private int getLinkIndex(Object key) {
         int i = keys.indexOf(key);
-        for (int l = 0; l < links.size(); l += 2) {
-            if (links.get(l) == i) {
+        for (int l = 0; l < links.size(); l++) {
+            if (links.get(l).getIndexKey() == i) {
                 return l;
             }
         }
@@ -67,55 +72,54 @@ public class MyMap<K, V> implements Map<K, V> {
 
     @Override
     public V put(K key, V value) {
-        int i = keys.indexOf(key);
-        int j = values.indexOf(value);
+        int iV = values.indexOf(value);
         int l = getLinkIndex(key);
-        if (l != -1 && values.get(links.get(l + 1)) == value) {
-            return value;
-        }
-        if (i == -1 && j == -1) {
-            keys.add(key);
-            values.add(value);
-            links.add(keys.size() - 1);
-            links.add(values.size() - 1);
-        } else if (i == -1) {
-            keys.add(key);
-            links.add(keys.size() - 1);
-            links.add(j);
-        } else if (j == -1) {
-            int index = links.get(l + 1);
-            if (!isAnotherLinkValue(values.get(index), key)) {
-                values.remove(index);
-                rebaseLinks(index);
+        if (l != -1) {
+            if (iV == -1) {
+                values.add(value);
+                links.get(l).setIndexValue(values.size() - 1);
+            } else {
+                V oldValue = values.get(links.get(l).getIndexValue());
+                if (oldValue.equals(value)) {
+                    return value;
+                } else {
+                    if (rebaseLinks(oldValue, key)) {
+                        values.remove(oldValue);
+                        if (iV > links.get(l).getIndexValue()) {
+                            iV--;
+                        }
+                    }
+                    links.get(l).setIndexValue(iV);
+                }
             }
-            values.add(value);
-            links.add(l + 1, values.size() - 1);
-            links.remove(l + 2);
         } else {
-            links.add(l + 1, j);
-            links.remove(l + 1);
+            if (iV == -1) {
+                keys.add(key);
+                values.add(value);
+                links.add(new Node(keys.size() - 1, values.size() - 1));
+            } else {
+                keys.add(key);
+                links.add(new Node(keys.size() - 1, iV));
+            }
         }
         return value;
     }
 
-    private void rebaseLinks(Integer indexRebase) {
-        for (int l = 1; l < links.size(); l += 2) {
-            if (links.get(l) > indexRebase) {
-                links.add(l, links.get(l) - 1);
-                links.remove(l + 1);
+    private boolean rebaseLinks(Object oldValue, Object key) {
+        int iOldV = values.indexOf(oldValue);
+        int iK = keys.indexOf(key);
+        for (Node link : links) {
+            if (link.getIndexValue() == iOldV && link.getIndexKey() != iK) {
+                return false;
             }
         }
-    }
-
-    private boolean isAnotherLinkValue(Object value, Object key) {
-        int i = values.indexOf(value);
-        int j = keys.indexOf(key);
-        for (int l = 0; l < links.size(); l += 2) {
-            if (links.get(l + 1) == i && links.get(l) != j) {
-                return true;
+        for (Node link : links) {
+            int i = link.getIndexValue();
+            if (i > iOldV) {
+                link.setIndexValue(i - 1);
             }
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -123,15 +127,17 @@ public class MyMap<K, V> implements Map<K, V> {
         int l = getLinkIndex(key);
         if (l != -1) {
             V v = values.get(getValueIndex(key));
-            int i = links.get(l + 1);
-            if (!isAnotherLinkValue(values.get(i), key)) {
-                values.remove(i);
-                rebaseLinks(i);
+            if (rebaseLinks(v, key)) {
+                values.remove(v);
             }
-            i = links.get(l);
-            keys.remove(i);
-            links.remove(l + 1);
+            int iK = keys.indexOf(key);
+            for (Node link : links) {
+                if (link.getIndexKey() > iK) {
+                    link.setIndexKey(link.getIndexKey() - 1);
+                }
+            }
             links.remove(l);
+            keys.remove(key);
             return v;
         }
         return null;
@@ -139,7 +145,6 @@ public class MyMap<K, V> implements Map<K, V> {
 
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
-
     }
 
     @Override
@@ -152,9 +157,7 @@ public class MyMap<K, V> implements Map<K, V> {
     @Override
     public Set<K> keySet() {
         Set<K> set = new HashSet<>();
-        for (K key: keys ) {
-            set.add(key);
-        }
+        set.addAll(keys);
         return set;
     }
 
@@ -166,17 +169,16 @@ public class MyMap<K, V> implements Map<K, V> {
     @Override
     public Set<Entry<K, V>> entrySet() {
         Set<Entry<K, V>> s = new HashSet<>();
-        for (int k = 0; k < links.size(); k+=2) {
-            final int i = k;
+        for (Node link : links) {
             s.add(new Entry<K, V>() {
                 @Override
                 public K getKey() {
-                    return keys.get(links.get(i));
+                    return keys.get(link.getIndexKey());
                 }
 
                 @Override
                 public V getValue() {
-                    return values.get(links.get(i+1));
+                    return values.get(link.getIndexValue());
                 }
 
                 @Override
@@ -186,5 +188,32 @@ public class MyMap<K, V> implements Map<K, V> {
             });
         }
         return s;
+    }
+
+    private class Node {
+        private int indexKey;
+        private int indexValue;
+
+        Node(int indexKey, int indexValue) {
+            this.indexKey = indexKey;
+            this.indexValue = indexValue;
+
+        }
+
+        int getIndexKey() {
+            return indexKey;
+        }
+
+        public void setIndexKey(int indexKey) {
+            this.indexKey = indexKey;
+        }
+
+        int getIndexValue() {
+            return indexValue;
+        }
+
+        void setIndexValue(int indexValue) {
+            this.indexValue = indexValue;
+        }
     }
 }
