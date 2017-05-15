@@ -1,11 +1,6 @@
 package ru.spbstu.telematics.popov.lab02;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Подобие HashMap, наследуется от intarface Map
@@ -47,7 +42,12 @@ public class MyMap<K, V> implements Map<K, V> {
 
     @Override
     public V get(Object key) {
-        return values.get(getValueIndex(key));
+        int i = getValueIndex(key);
+        if (i != -1) {
+            return values.get(i);
+        } else {
+            return null;
+        }
     }
 
     private int getValueIndex(Object key) {
