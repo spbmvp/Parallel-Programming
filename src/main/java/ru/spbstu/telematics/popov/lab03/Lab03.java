@@ -16,7 +16,7 @@ public class Lab03 {
         }
     }
 
-    private static void calculatePiThread(int countThread, double eps) throws InterruptedException {
+    public static BigDecimal calculatePiThread(int countThread, double eps) throws InterruptedException {
         BigDecimal dx = BigDecimal.valueOf(eps);
         System.out.println("    Eps = " + dx);
         p = new CalcPi(dx);
@@ -41,9 +41,11 @@ public class Lab03 {
             t.join();
         }
         long timeEnd = System.currentTimeMillis();
+        BigDecimal pi = p.calcPi();
         System.out.println("    Count operation = " + p.countOperation);
-        System.out.println("    Pi = " + p.calcPi());
+        System.out.println("    Pi = " + pi);
         System.out.println("    Time:" + (timeEnd - timeStart) + " ms");
+        return pi;
     }
 
     private static Thread runCalcPiThread(BigDecimal x1, BigDecimal x2, BigDecimal dx) {
