@@ -1,4 +1,0 @@
-rootProject.name = 'Parallel-Programming'
-include 'Lab01'
-include 'Lab02'
-

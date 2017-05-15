@@ -5,9 +5,9 @@ import org.junit.Test;
 
 import java.io.File;
 
-public class FileIOTestCase {
+public class FilesIOTest {
     @Test
-    public void TouchFileTest()
+    public void touch()
     {
         String nameFile = "Test";
         FilesIO fileIO = new FilesIO();
@@ -16,7 +16,7 @@ public class FileIOTestCase {
     }
 
     @Test
-    public void RemoveFileTest()
+    public void rm()
     {
         String nameFile = "Test";
         FilesIO fileIO = new FilesIO();
