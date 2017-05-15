@@ -9,13 +9,14 @@ public class FilesIO {
     /**
      * Метод изменяет время последнего изменения файла
      * или время последнего доступа к нему, при утсотвии такого файла создается новый.
+     *
      * @param nameFile - имя создаваемого файла,
      *                 либо обновить информацию о времени существующего файла
      * @return возвращает дескриптор файла, либо null
      */
     public File touch(String nameFile) {
         File file = FileUtils.getFile(nameFile);
-        if (file==null) {
+        if (file == null) {
             file = new File(file, nameFile);
             System.out.println("Create new file " + nameFile);
         }
@@ -28,15 +29,17 @@ public class FilesIO {
         }
         return file;
     }
+
     /**
      * Метод удаляет существующий файл, не распространяется на директории
+     *
      * @param nameFile - имя удаляемого файла
      * @return возвращает true при успешном удалении, либо false при ошибке
      */
     public boolean rm(String nameFile) {
         File file = FileUtils.getFile(nameFile);
         boolean resultRemove = FileUtils.deleteQuietly(file);
-        if(resultRemove) {
+        if (resultRemove) {
             System.out.println("Remove file " + nameFile);
         }
         return resultRemove;

@@ -19,11 +19,11 @@ public class Introduction {
         /*
         *Пример использования commons-io на примере работы с файлами
          */
-        double[][] m1 = {{1,1,1},{1,1,1},{1,1,1}};
-        double[][] m2 = {{2,2,2},{2,2,2},{2,2,2}};
+        double[][] m1 = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
+        double[][] m2 = {{2, 2, 2}, {2, 2, 2}, {2, 2, 2}};
         Math matrix = new Math();
-        matrix.MatrixOutput(matrix.MatrixAdd(m1,m2));
-        matrix.MatrixOutput(matrix.MatrixMultiply(m1,m2));
+        matrix.matrixOutput(matrix.matrixAdd(m1, m2));
+        matrix.matrixOutput(matrix.matrixMultiply(m1, m2));
     }
 }
 
