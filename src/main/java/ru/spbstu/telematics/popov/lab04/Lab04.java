@@ -8,26 +8,37 @@ import java.net.MulticastSocket;
 import java.util.Random;
 
 public class Lab04 {
+    static ClientWindow mainWindow;
+    static Client client;
+    static int mcPort = 12345;
+    static String mcIPStr = "230.1.1.1";
+
     public static void main(String[] args) throws InterruptedException, IOException {
         Integer id = new Random().nextInt(1000);
-        int mcPort = 12345;
-        String mcIPStr = "230.1.1.1";
-        runReceiver(mcIPStr, mcPort);
-        Message msg = new Message(id, "Hello");
-        try {
-            for (int i = 0; i < 100; i++) {
-                msg.setMessege(" hello " + i);
-                sendMessage(msg, mcPort, mcIPStr);
-                System.out.println("                    Sent a  multicast message: " + msg.getMessege());
-                Thread.sleep(1000);
+        runReceiver();
+        mainWindow = new ClientWindow();
+        client = new Client(id, "new client");
+        client.setName("blala"+id);
+        newClient();
+        mainWindow.ok.addActionListener(e -> {
+            if (!mainWindow.clientMessage.getText().isEmpty()) {
+                client.setLastMsg(mainWindow.clientMessage.getText());
+                try {
+                    sendMessage(client);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
             }
-            System.out.println("Exiting application");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        });
     }
 
-    private static void sendMessage(Message msg, int mcPort, String mcIPStr) throws IOException {
+    private static void newClient() throws IOException {
+        client.setLastMsg("new client");
+        client.setServiseMsg(true);
+        sendMessage(client);
+    }
+
+    public static void sendMessage(Client msg) throws IOException {
         InetAddress mcIPAddress = InetAddress.getByName(mcIPStr);
         DatagramSocket udpSocket = new DatagramSocket();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -41,10 +52,10 @@ public class Lab04 {
         udpSocket.close();
     }
 
-    private static Thread runReceiver(String mcIPStr, int mcPort) {
+    private static Thread runReceiver() {
         Thread t = new Thread(() -> {
-            MulticastSocket mcSocket = null;
-            InetAddress mcIPAddress = null;
+            MulticastSocket mcSocket;
+            InetAddress mcIPAddress;
             try {
                 mcIPAddress = InetAddress.getByName(mcIPStr);
                 mcSocket = new MulticastSocket(mcPort);
@@ -54,7 +65,7 @@ public class Lab04 {
                     mcSocket.receive(packet);
                     ByteArrayInputStream bais = new ByteArrayInputStream(packet.getData());
                     ObjectInputStream ois = new ObjectInputStream(bais);
-                    Message msg = (Message) ois.readObject();
+                    Client msg = (Client) ois.readObject();
                     handlingMessage(msg);
                 }
                 mcSocket.leaveGroup(mcIPAddress);
@@ -67,7 +78,22 @@ public class Lab04 {
         return t;
     }
 
-    private static void handlingMessage(Message msg) {
-        System.out.println("[Multicast  Receiver] Received: " + msg.getMessege() + " от " + msg.getIdClient());
+    private static void handlingMessage(Client msg) throws IOException {
+        if(msg.isServiseMsg()) {
+            switch (msg.getLastMsg()) {
+                case "new client":
+                    if(client.getName() != null) {
+                        client.setLastMsg("name");
+                        client.setServiseMsg(true);
+                        sendMessage(client);
+                    }
+                    break;
+                case "name" :
+                    mainWindow.clientsOnline.append(msg.getName()+"\n");
+                    break;
+            }
+        } else {
+            mainWindow.messagesField.append(msg.getIdClient() + ">> " + msg.getLastMsg() + "\n");
+        }
     }
 }
