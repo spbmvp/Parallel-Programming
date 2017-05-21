@@ -2,47 +2,60 @@ package ru.spbstu.telematics.popov.lab04;
 
 import java.io.Serializable;
 
-public class Client implements Serializable {
-    private Integer idClient;
+class Client implements Serializable {
     private String lastMsg;
-    private boolean isServiseMsg;
+    private ServiceMessage lastServiceMsg;
+    private boolean isServiceMsg;
     private String name;
-
-    Client(Integer id, String mes) {
-        this.idClient = id;
-        this.lastMsg = mes;
+    Client() {
     }
 
-    public boolean isServiseMsg() {
-        return isServiseMsg;
+    ServiceMessage getLastServiceMsg() {
+        return lastServiceMsg;
     }
 
-    public void setServiseMsg(boolean serviseMsg) {
-        isServiseMsg = serviseMsg;
+    boolean isServiceMsg() {
+        return isServiceMsg;
     }
 
-    public String getName() {
+    String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    void setName(String name) {
         this.name = name;
     }
 
-    public Integer getIdClient() {
-        return idClient;
-    }
-
-    public void setIdClient(Integer idClient) {
-        this.idClient = idClient;
-    }
-
-    public String getLastMsg() {
+    String getLastMsg() {
         return lastMsg;
     }
 
-    public void setLastMsg(String lastMsg) {
-        this.isServiseMsg = false;
+    void setLastMsg(ServiceMessage serviceMessage) {
+        this.isServiceMsg = true;
+        this.lastServiceMsg = serviceMessage;
+    }
+
+    void setLastMsg(String lastMsg) {
+        this.isServiceMsg = false;
         this.lastMsg = lastMsg;
+    }
+
+    public enum ServiceMessage {
+        NEW_CLIENT("new client"),
+        END("end"),
+        SEND_NAME("send name"),
+        NAME("name")
+        ;
+
+        private String msg;
+
+        ServiceMessage(String s) {
+            msg=s;
+        }
+
+        @Override
+        public String toString() {
+            return msg;
+        }
     }
 }

@@ -5,51 +5,46 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.Random;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Lab04 {
-    static ClientWindow mainWindow;
     static Client client;
-    static int mcPort = 12345;
-    static String mcIPStr = "230.1.1.1";
+    private static ClientWindow mainWindow;
+    private static int mcPort = 12345;
+    private static String mcIPStr = "230.1.1.1";
+    static List<String> onlineNameClients = new LinkedList<>();
 
     public static void main(String[] args) throws InterruptedException, IOException {
-        Integer id = new Random().nextInt(1000);
+        onlineNameClients.add("Online:");
         runReceiver();
         mainWindow = new ClientWindow();
-        client = new Client(id, "new client");
-        client.setName("blala"+id);
+        client = new Client();
         newClient();
-        mainWindow.ok.addActionListener(e -> {
-            if (!mainWindow.clientMessage.getText().isEmpty()) {
-                client.setLastMsg(mainWindow.clientMessage.getText());
-                try {
-                    sendMessage(client);
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        });
     }
 
-    private static void newClient() throws IOException {
-        client.setLastMsg("new client");
-        client.setServiseMsg(true);
+    private static void newClient() {
+        client.setLastMsg(Client.ServiceMessage.SEND_NAME);
         sendMessage(client);
     }
 
-    public static void sendMessage(Client msg) throws IOException {
-        InetAddress mcIPAddress = InetAddress.getByName(mcIPStr);
-        DatagramSocket udpSocket = new DatagramSocket();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeObject(msg);
-        byte[] msgByteArray = baos.toByteArray();
-        DatagramPacket packet = new DatagramPacket(msgByteArray, msgByteArray.length);
-        packet.setAddress(mcIPAddress);
-        packet.setPort(mcPort);
-        udpSocket.send(packet);
-        udpSocket.close();
+    static void sendMessage(Client msg) {
+        InetAddress mcIPAddress;
+        try {
+            mcIPAddress = InetAddress.getByName(mcIPStr);
+            DatagramSocket udpSocket = new DatagramSocket();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(msg);
+            byte[] msgByteArray = baos.toByteArray();
+            DatagramPacket packet = new DatagramPacket(msgByteArray, msgByteArray.length);
+            packet.setAddress(mcIPAddress);
+            packet.setPort(mcPort);
+            udpSocket.send(packet);
+            udpSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static Thread runReceiver() {
@@ -70,6 +65,8 @@ public class Lab04 {
                 }
                 mcSocket.leaveGroup(mcIPAddress);
                 mcSocket.close();
+                client.setLastMsg(Client.ServiceMessage.END);
+                sendMessage(client);
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
@@ -79,21 +76,33 @@ public class Lab04 {
     }
 
     private static void handlingMessage(Client msg) throws IOException {
-        if(msg.isServiseMsg()) {
-            switch (msg.getLastMsg()) {
-                case "new client":
-                    if(client.getName() != null) {
-                        client.setLastMsg("name");
-                        client.setServiseMsg(true);
+        if (msg.isServiceMsg()) {
+            switch (msg.getLastServiceMsg()) {
+                case NEW_CLIENT:
+                    mainWindow.addMessage("Client \"" + msg.getName() + "\" attached of this chat!");
+                    break;
+                case SEND_NAME:
+                    if (client.getName() != null) {
+                        client.setLastMsg(Client.ServiceMessage.NAME);
                         sendMessage(client);
                     }
                     break;
-                case "name" :
-                    mainWindow.clientsOnline.append(msg.getName()+"\n");
+                case NAME:
+                    if (!onlineNameClients.contains(msg.getName())) {
+                        onlineNameClients.add(msg.getName());
+                        mainWindow.updateOnlineClients(onlineNameClients);
+                    }
+                    break;
+                case END:
+                    if (onlineNameClients.contains(msg.getName())) {
+                        onlineNameClients.remove(msg.getName());
+                        mainWindow.updateOnlineClients(onlineNameClients);
+                        mainWindow.addMessage("Client \"" + msg.getName() + "\" came out of this chat!");
+                    }
                     break;
             }
         } else {
-            mainWindow.messagesField.append(msg.getIdClient() + ">> " + msg.getLastMsg() + "\n");
+            mainWindow.addMessage(msg.getName() + ">> " + msg.getLastMsg());
         }
     }
 }
