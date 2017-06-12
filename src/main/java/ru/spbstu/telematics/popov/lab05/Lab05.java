@@ -12,7 +12,14 @@ package ru.spbstu.telematics.popov.lab05;
  * полностью закрытой и наоборот.
  */
 public class Lab05 {
-    public static void main(String[] args) {
-        Motor m = new Motor(10000, 500);
+    public static void main(String[] args) throws InterruptedException {
+        Motor m = new Motor(10000, 5);
+        new Thread(m).start();
+        while(true) {
+            m.setCommand(Motor.Command.START_OPEN);
+            Thread.sleep(1000);
+            m.setCommand(Motor.Command.STOP_OPEN);
+            Thread.sleep(10);
+        }
     }
 }
