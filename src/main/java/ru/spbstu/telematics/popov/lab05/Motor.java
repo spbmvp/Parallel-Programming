@@ -1,6 +1,6 @@
 package ru.spbstu.telematics.popov.lab05;
 
-public class Motor implements Runnable {
+public class Motor {
     private int R; //время на открытие и закрытите окна в мсек.
     private int st; // осталось времени на открытие окна в мсек.
     private int T; //если меньше этого времени происходит нажатие кнопки, то окно будет полностью открыто/закрыто в мсек.
@@ -30,53 +30,112 @@ public class Motor implements Runnable {
         this.cm = cm;
     }
 
-    @Override
-    public void run() {
-        long timeClose = 0;
-        long timeOpen = 0;
-        while (true) {
+    public Thread startMotor() {
+        Thread t = new Thread(() -> {
+            run();
+        });
+        t.start();
+        return t;
+    }
+
+    private void run() {
+        long timeStartClose = 0;
+        long timeStopClose = 0;
+        long timeStartOpen = 0;
+        long timeStopOpen = 0;
+        while (!Thread.interrupted()) {
             switch (cm) {
                 case START_CLOSE:
-                    if (timeClose == 0) {
+                    timeStopClose = 0;
+                    if (timeStartClose == 0) {
                         System.out.println("START_CLOSE");
-                        timeClose = System.currentTimeMillis();
-                        if (!closedWindow) {
-                            openedWindow=false;
-                            st++;
-                            if (st >= R) {
-                                closedWindow = true;
-                                st=R;
-                            }
+                        timeStartClose = System.currentTimeMillis();
+                    }
+                    if (!closedWindow) {
+                        openedWindow = false;
+                        try {
+                            Thread.sleep(1);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        st++;
+                        if (st >= R) {
+                            closedWindow = true;
+                            st = R;
                         }
                     }
                     break;
                 case STOP_CLOSE:
-                    if (timeClose != 0 && (timeClose + T <= System.currentTimeMillis())) {
+                    if (timeStopClose == 0) {
                         System.out.println("STOP_CLOSE");
-                        getStatus();
+                        timeStopClose = System.currentTimeMillis();
                     }
-                    timeClose = 0;
+                    if (timeStopClose >= timeStartClose && (timeStopClose - timeStartClose <= T)) {
+                        timeStartClose = 0;
+                        timeStopClose = T;
+                        if (!closedWindow) {
+                            openedWindow = false;
+                            try {
+                                Thread.sleep(1);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            st++;
+                            if (st >= R) {
+                                closedWindow = true;
+                                st = R;
+                                timeStartClose = 0;
+                            }
+                        }
+                    } else {
+                        timeStartClose = 0;
+                    }
                     break;
                 case START_OPEN:
-                    if (timeOpen == 0) {
+                    timeStopOpen = 0;
+                    if (timeStartOpen == 0) {
                         System.out.println("START_OPEN");
-                        timeOpen = System.currentTimeMillis();
-                        if (!openedWindow) {
-                            closedWindow=false;
-                            st-=500;
-                            if (st <= 0) {
-                                openedWindow = true;
-                                st=0;
-                            }
+                        timeStartOpen = System.currentTimeMillis();
+                    }
+                    if (!openedWindow) {
+                        closedWindow = false;
+                        try {
+                            Thread.sleep(1);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        st--;
+                        if (st <= 0) {
+                            openedWindow = true;
+                            st = 0;
                         }
                     }
                     break;
                 case STOP_OPEN:
-                    if (timeOpen != 0 && (timeOpen + T <= System.currentTimeMillis())) {
+                    if (timeStopOpen == 0) {
                         System.out.println("STOP_OPEN");
-                        getStatus();
+                        timeStopOpen = System.currentTimeMillis();
                     }
-                    timeOpen = 0;
+                    if (timeStopOpen >= timeStartOpen && (timeStopOpen - timeStartOpen <= T)) {
+                        timeStartOpen = 0;
+                        timeStopOpen = T;
+                        if (!openedWindow) {
+                            closedWindow = false;
+                            try {
+                                Thread.sleep(1);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            st--;
+                            if (st <= 0) {
+                                openedWindow = true;
+                                st = 0;
+                                timeStartOpen = 0;
+                            }
+                        }
+                    } else {
+                        timeStartOpen = 0;
+                    }
                     break;
             }
         }
