@@ -4,12 +4,10 @@ pipeline {
     stage('stage 1') {
       steps {
         parallel(
-          "stage 1": {
-            sh '''ls -la
-'''
-            
+          "paral 1": {
+            sh 'ls -la'
           },
-          "": {
+          "paral 2": {
             echo 'Tets'
             
           }
