@@ -3,15 +3,13 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sleep 5
-        echo 'Build'
+        sh './gradlew clean build'
       }
     }
 
     stage('Test') {
       steps {
-        sleep 5
-        echo 'Test'
+        sh './gradlew test' 
       }
     }
 
