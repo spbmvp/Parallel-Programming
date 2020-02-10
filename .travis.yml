@@ -3,7 +3,7 @@ language: java
 branches:
   only:
   - master
-  - /v\d+\.\d+[a-z]/
+  - /v\d+\.\d+/
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
