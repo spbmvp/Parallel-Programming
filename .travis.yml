@@ -13,25 +13,19 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
     
-    
-    
 install: true
 
 os: linux
 dist: trusty
 jdk: oraclejdk8
 
-jobs:
-  include:
-    - stage: "Build"
-      script: ./gradlew build check
-    - stage: "Deploy"
-      deploy:
-        provider: releases
-        api_key: 
-          secure: "${GH_TOKEN}"
-        file_glob: true
-        file: "build/distributions/*"
-        skip_cleanup: true
-        on:
-          tags: true
+script: ./gradlew build check
+deploy:
+  provider: releases
+  api_key: 
+    secure: "${GH_TOKEN}"
+  file_glob: true
+  file: "build/distributions/*"
+  skip_cleanup: true
+  on:
+    tags: true
